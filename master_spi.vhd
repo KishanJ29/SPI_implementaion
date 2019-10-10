@@ -20,8 +20,8 @@
 		TYPE state IS ( IDLE, START, DATASEND );
 		SIGNAL SpiState : state;
 		SIGNAL BClk : STD_LOGIC;
-		SIGNAL MasterRegRx : unsigned(7 downto 0);
-		SIGNAL MasterRegTx : unsigned(7 downto 0);
+		SIGNAL MasterReg : unsigned(7 downto 0);
+		--SIGNAL MasterRegTx : unsigned(7 downto 0);
 		SIGNAL load : STD_LOGIC;
 		SIGNAL count : integer range 0 to 9;
 		CONSTANT ClkFreq :integer := 50000000;
@@ -68,7 +68,7 @@
 				mosi <= '1';
 				ss <= '1';
 				count <= 0;
-				MasterRegRx <= "00000000";
+				MasterReg <= "00000000";
 			elsif(falling_edge(BClk))then
 				case(SpiState) is
 					when IDLE => 
@@ -91,16 +91,18 @@
 --						 load <= '0';
 --						 SpiState <= DATASEND;
 					when DATASEND => 
-							if(count = 9)then
-								mosi <= MasterRegTx(7); ---TX 
-								MasterRegRx <= ( miso & MasterRegRx(7 downto 1));-- Rx
+							if(count = 8)then
+								mosi <= MasterReg(7); ---TX 
+								--MasterReg <= ( miso & MasterReg(7 downto 1));-- Rx
+								MasterReg <= (MasterReg(6 downto 0) & miso);-- Rx
 								SpiState <= IDLE;
-								data_Rx <= std_logic_vector(MasterRegRx);
+								data_Rx <= std_logic_vector(MasterReg);
 	--					  	elsif(count = 9)then
-	--							data_Rx <= std_logic_vector(MasterRegRx);
+	--							data_Rx <= std_logic_vector(MasterReg);
 							else
-								mosi <= MasterRegTx(7);
-								MasterRegRx <= (miso & MasterRegRx(7 downto 1));
+								mosi <= MasterReg(7);
+								--MasterReg <= (miso & MasterReg(7 downto 1));
+								MasterReg <= (MasterReg(6 downto 0) & miso);-- Rx
 								SpiState <= DATASEND;
 							end if;
 					when others => SpiState <= IDLE;
@@ -109,12 +111,12 @@
 ---				SHIFT REG
 		---------------------------		
 				if(load = '1')then
-					MasterRegTx <= unsigned(data_Tx);
+					MasterReg <= unsigned(data_Tx);
 				else 
-					if(count = 9)then
+					if(count = 8)then
 						count <= 0;
 				  	else
-						MasterRegTx <= shift_left(MasterRegTx,1);	
+						--MasterReg <= shift_left(MasterReg,1);	
 						count <= count + 1;					
 					end if;
 				end if;

@@ -128,7 +128,7 @@ architecture test of test_spi is
 --							report" Master to Slave transaction Failure" severity error;						
 --						end if;
 --					wait;
-						--test_vector("11111111","11111111");
+						test_vector("11111111","11111111");
 						wait for 1 us;
 						test_vector("11100111","11111001");
 						wait for 3 us;
